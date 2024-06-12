@@ -8,7 +8,12 @@ exports.createReview = async (req, res) => {
     await review.save();
 
     const movie = await Movie.findById(movieId);
-    movie.ratings.push(review._id);
+
+    if (!movie) {
+      return res.status(404).json({ error: 'Movie not found' });
+    }
+
+    movie.reviews.push(review._id);
     await movie.save();
 
     res.status(201).json(review);
@@ -18,10 +23,29 @@ exports.createReview = async (req, res) => {
 };
 
 exports.getReviewsForMovie = async (req, res) => {
+  // try {
+  //   const reviews = await Review.find({ movie: req.params.movieId }).populate('user', 'username email');
+  //   res.json(reviews);
+  // } catch (err) {
+  //   res.status(500).json({ error: err.message });
+  // }
+  const id = req.params.movieId
   try {
-    const reviews = await Review.find({ movie: req.params.movieId }).populate('user');
-    res.json(reviews);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const movie = await Movie.findById(id);
+    if (!movie) {
+        return res.status(400).json({ error: "Movie not found" });
+    }
+    const reviewbymovie = await Movie.findById(id).populate({
+        path: 'reviews',
+        populate: {
+            path: 'user',
+            select: 'username'
+        }
+    });
+    res.json(reviewbymovie);
   }
-};
+  catch (err) {
+       res.status(500).json({ error: err.message });
+     }
+}
+

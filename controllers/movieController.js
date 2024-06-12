@@ -2,16 +2,14 @@ const Movie = require('../models/Movie');
 const cloudinary = require('../config/cloudinary');
 
 exports.createMovie = async (req, res) => {
-  const { title, description, releaseDate, topCast, genres } = req.body;
+  const { title, description, releaseDate, topCast, genres, image } = req.body;
   try {
-      const result = await cloudinary.uploader.upload(req.file.path, { folder: 'movies' });
-      const movie = new Movie({
-          title, description, releaseDate, topCast, genres, image: result.secure_url
-      });
-      await movie.save();
-      res.status(201).json(movie);
+    const result = await cloudinary.uploader.upload(image, { folder: 'movies' });
+    const movie = new Movie({ title, description, releaseDate, topCast, genres, image: result.secure_url });
+    await movie.save();
+    res.status(201).json(movie);
   } catch (err) {
-      res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -58,40 +56,3 @@ exports.searchMovies = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-exports.deleteMovie = async (req, res) => {
-  try {
-    const movie = await Movie.findById(req.params.id);
-    if (!movie) return res.status(404).json({ message: 'Movie not found' });
-
-    await movie.remove();
-    res.json({ message: 'Movie deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.updateMovie = async (req, res) => {
-  const { title, description, releaseDate, topCast, genres, image } = req.body;
-  try {
-    const movie = await Movie.findById(req.params.id);
-    if (!movie) return res.status(404).json({ message: 'Movie not found' });
-
-    if (image) {
-      const result = await cloudinary.uploader.upload(image, { folder: 'movies' });
-      movie.image = result.secure_url;
-    }
-
-    movie.title = title || movie.title;
-    movie.description = description || movie.description;
-    movie.releaseDate = releaseDate || movie.releaseDate;
-    movie.topCast = topCast || movie.topCast;
-    movie.genres = genres || movie.genres;
-
-    await movie.save();
-    res.json({ message: 'Movie updated successfully', movie });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-

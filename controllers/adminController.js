@@ -1,19 +1,18 @@
 const User = require('../models/User');
-const Review = require('../models/Review');
 
-exports.getOverview = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const totalReviews = await Review.countDocuments();
-    const totalRatings = await Review.aggregate([
-      { $group: { _id: null, averageRating: { $avg: '$rating' } } },
-    ]);
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
-    res.json({
-      totalUsers,
-      totalReviews,
-      averageRating: totalRatings[0]?.averageRating || 0,
-    });
+exports.deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

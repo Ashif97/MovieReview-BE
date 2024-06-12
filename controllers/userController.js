@@ -1,19 +1,15 @@
 const User = require('../models/User');
 
 exports.followUser = async (req, res) => {
-    const { userId } = req.body;
-    try {
-        const user = await User.findById(req.params.id);
-        if (user._id.toString() === userId) {
-            return res.status(400).json({ message: 'You cannot follow yourself' });
-        }
-        await user.follow(userId);
-        res.json({ message: 'User followed successfully' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+  const { userId } = req.body;
+  try {
+    const user = await User.findById(req.params.id);
+    await user.follow(userId);
+    res.json({ message: 'User followed successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
-
 
 exports.unfollowUser = async (req, res) => {
   const { userId } = req.body;

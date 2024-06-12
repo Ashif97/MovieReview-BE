@@ -1,14 +1,13 @@
 const express = require('express');
 const { followUser, unfollowUser, addFavoriteMovie, removeFavoriteMovie, updateProfile, deleteAccount } = require('../controllers/userController');
-const auth = require('../middleware/auth');
-
+const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
-router.post('/:id/follow', auth, followUser);
-router.post('/:id/unfollow', auth, unfollowUser);
-router.post('/:id/favorites', auth, addFavoriteMovie);
-router.delete('/:id/favorites', auth, removeFavoriteMovie);
-router.put('/profile', auth, updateProfile);
-router.delete('/profile/:id', auth, deleteAccount);
+router.post('/follow', authMiddleware, followUser);
+router.post('/unfollow', authMiddleware, unfollowUser);
+router.post('/favorites', authMiddleware, addFavoriteMovie);
+router.delete('/favorites', authMiddleware, removeFavoriteMovie);
+router.put('/', authMiddleware, updateProfile);
+router.delete('/:id', authMiddleware, deleteAccount);
 
 module.exports = router;

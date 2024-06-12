@@ -1,48 +1,55 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const UserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
   bio: { type: String },
   profilePicture: { type: String },
   instagram: { type: String },
-  role: { type: String, enum: ['user', 'admin'], default: 'user' }, // Add role field
-  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   favoriteMovies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
-}, { timestamps: true });
+});
 
-UserSchema.pre('save', async function (next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-UserSchema.methods.follow = async function (userId) {
+userSchema.methods.follow = async function (userId) {
   if (!this.following.includes(userId)) {
     this.following.push(userId);
     await this.save();
+    const user = await this.constructor.findById(userId);
+    user.followers.push(this._id);
+    await user.save();
   }
 };
 
-UserSchema.methods.unfollow = async function (userId) {
-  this.following = this.following.filter(followingId => followingId.toString() !== userId.toString());
+userSchema.methods.unfollow = async function (userId) {
+  this.following.pull(userId);
   await this.save();
+  const user = await this.constructor.findById(userId);
+  user.followers.pull(this._id);
+  await user.save();
 };
 
-UserSchema.methods.addToFavorites = async function (movieId) {
+userSchema.methods.addToFavorites = async function (movieId) {
   if (!this.favoriteMovies.includes(movieId)) {
     this.favoriteMovies.push(movieId);
     await this.save();
   }
 };
 
-UserSchema.methods.removeFromFavorites = async function (movieId) {
-  this.favoriteMovies = this.favoriteMovies.filter(favoriteId => favoriteId.toString() !== movieId.toString());
+userSchema.methods.removeFromFavorites = async function (movieId) {
+  this.favoriteMovies.pull(movieId);
   await this.save();
 };
 
-module.exports = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', userSchema);
+module.exports = User;
