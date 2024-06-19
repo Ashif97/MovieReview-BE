@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 exports.register = async (req, res) => {
-  console.log(req.body,'body');
+  // console.log(req.body,'body');
   const { username, email, password } = req.body;
   try {
     // Check if the email already exists
@@ -33,12 +33,14 @@ exports.login = async (req, res) => {
   try {
     // Check if the user exists
     const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'User not found' });
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
 
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
