@@ -1,7 +1,6 @@
 .env
 node_modules
-controllers/messageController.js
-routes/messages.js
-models/Message.js
+# controllers/messageController.js
+# routes/messages.js
+# models/Message.js
 utils
-app.js
