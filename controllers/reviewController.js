@@ -1,6 +1,15 @@
 const Review = require('../models/Review');
 const Movie = require('../models/Movie');
 
+// Helper function to calculate average rating
+const calculateAverageRating = async (movieId) => {
+  const reviews = await Review.find({ movie: movieId });
+  if (reviews.length === 0) return 0;
+  
+  const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+  return (sum / reviews.length).toFixed(1);
+};
+
 exports.createReview = async (req, res) => {
   const { userId, movieId, rating, reviewText } = req.body;
   try {
@@ -14,38 +23,48 @@ exports.createReview = async (req, res) => {
     }
 
     movie.reviews.push(review._id);
+    
+    // Calculate and update average rating
+    movie.averageRating = await calculateAverageRating(movieId);
+    
     await movie.save();
 
-    res.status(201).json(review);
+    res.status(201).json({ review, averageRating: movie.averageRating });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 exports.getReviewsForMovie = async (req, res) => {
-  // try {
-  //   const reviews = await Review.find({ movie: req.params.movieId }).populate('user', 'username email');
-  //   res.json(reviews);
-  // } catch (err) {
-  //   res.status(500).json({ error: err.message });
-  // }
-  const id = req.params.movieId
+  const id = req.params.movieId;
   try {
     const movie = await Movie.findById(id);
     if (!movie) {
-        return res.status(400).json({ error: "Movie not found" });
+        return res.status(404).json({ error: 'Movie not found' });
     }
-    const reviewbymovie = await Movie.findById(id).populate({
-        path: 'reviews',
-        populate: {
-            path: 'user',
-            select: 'username'
-        }
-    });
-    res.json(reviewbymovie);
-  }
-  catch (err) {
-       res.status(500).json({ error: err.message });
-     }
-}
+    const reviews = await Review.find({ movie: id }).populate('user', 'username');
+    
+    // Calculate average rating
+    const averageRating = await calculateAverageRating(id);
 
+    res.json({ reviews, averageRating });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAverageRating = async (req, res) => {
+  const id = req.params.movieId;
+  try {
+    const movie = await Movie.findById(id);
+    if (!movie) {
+        return res.status(404).json({ error: 'Movie not found' });
+    }
+    
+    const averageRating = await calculateAverageRating(id);
+
+    res.json({ averageRating });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

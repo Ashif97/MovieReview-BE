@@ -4,11 +4,10 @@ const movieSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   releaseDate: { type: Date, required: true },
-  topCast: [{ type: String, required: true }],
-  genres: [{ type: String, required: true }],
+  topCast: [{ type: String, required: true }], // Array of strings
+  genres: [{ type: String, required: true }],  // Array of strings
   image: { type: String, required: true },
   reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
-});
+}, { timestamps: true });
 
-const Movie = mongoose.model('Movie', movieSchema);
-module.exports = Movie;
+module.exports = mongoose.model('Movie', movieSchema);
