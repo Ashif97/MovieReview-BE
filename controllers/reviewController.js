@@ -1,6 +1,20 @@
 const Review = require('../models/Review');
 const Movie = require('../models/Movie');
+const User = require('../models/User');
 
+// exports.getLatestReviews = async (req, res) => {
+//   try {
+//     const reviews = await Review.find()
+//       .sort({ createdAt: -1 })
+//       .limit(5)
+//       .populate('user', 'username')
+//       .populate('movie', 'title');
+
+//     res.json(reviews);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 // Helper function to calculate average rating
 const calculateAverageRating = async (movieId) => {
   const reviews = await Review.find({ movie: movieId });
@@ -68,3 +82,4 @@ exports.getAverageRating = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
