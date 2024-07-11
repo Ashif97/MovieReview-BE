@@ -28,19 +28,17 @@ exports.register = async (req, res) => {
 
 
 exports.login = async (req, res) => {
-  console.log(req.body,'body');
+  console.log(req.body, 'body');
   const { email, password } = req.body;
   try {
     // Check if the user exists
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'User not found' });
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
 
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -50,7 +48,7 @@ exports.login = async (req, res) => {
 
     // Set token in cookie and respond with success message
     console.log('loggedin');
-    res.cookie('token', token, { httpOnly: true }).json({ message: 'Logged in successfully' });
+    res.cookie('token', token, { httpOnly: true }).json({ message: 'Logged in successfully', token , role: user.role ,userId : user._id ,username : user.username });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
