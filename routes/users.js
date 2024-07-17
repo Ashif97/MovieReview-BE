@@ -8,6 +8,6 @@ router.post('/unfollow', authMiddleware, unfollowUser);
 router.post('/favorites', authMiddleware, addFavoriteMovie);
 router.delete('/favorites', authMiddleware, removeFavoriteMovie);
 router.put('/', authMiddleware, updateProfile);
-router.delete('/:id', authMiddleware, deleteAccount);
+router.delete('/:id', deleteAccount);
 
 module.exports = router;
